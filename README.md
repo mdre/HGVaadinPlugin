@@ -10,5 +10,15 @@ gradle vaadinBuild
 ```
 
 the plugin will remove the "dependencies" node in the POM and recreate it with the dependencies thats found in the build.gradle
-and update de entry <vaadin.version> in the properties section.
+
+To set a specific version of Vaadin, you can add this config to your build.gradle
+
+```
+hgvConfig {
+    // default vaadin version
+    vaadinVersion = "14.1.3"
+}
+```
+
+and this will update de entry <vaadin.version> in the POM properties section.
 
