@@ -5,7 +5,9 @@ Since the oficial Gradle plugin requiere a licence, I create this as a workaroun
 
 To use it, just call:
 
+```
 gradle vaadinBuild
+```
 
 the plugin will remove the "dependencies" node in the POM and recreate it with the dependencies thats found in the build.gradle
 and update de entry <vaadin.version> in the properties section.
