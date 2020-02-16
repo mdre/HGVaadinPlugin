@@ -23,6 +23,9 @@ class HGVaadinPlugin implements Plugin<Project> {
         // project.getPluginManager().apply('gradle-maven-exec-plugin')
         projectRef = project
 
+        //verify if pom exist
+        verifyPom()
+
         project.task('prepareFrontEnd', type: MavenExec) {
             group = "Vaadin mvn build"
             description = "prepare front-end"
@@ -140,7 +143,10 @@ class HGVaadinPlugin implements Plugin<Project> {
         println "--------------------------------------------------------------"
     }
 
-
+    def verifyPomExist() {
+        FIle pomExist = new File("pom.xml")
+        println "POM exist: ",pomExist.exist()
+    }
     // def copyCompiledClass() {
     //     copy {
     //         from "build/classes/java/main/."
