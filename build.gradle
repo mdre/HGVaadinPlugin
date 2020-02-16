@@ -1,0 +1,97 @@
+plugins {
+    id 'groovy'
+    id 'maven'
+    id "com.github.dkorotych.gradle-maven-exec" version "2.2.1"
+}
+
+repositories {
+    mavenLocal() 
+    mavenCentral()
+    jcenter()
+
+    maven {
+        url "https://mvnrepository.com/artifact/com.vaadin/vaadin"
+        url "https://plugins.gradle.org/m2/"
+    }
+} 
+
+configurations {
+    // configuration that holds jars to include in the jar
+    extraLibs
+}
+
+dependencies {
+    implementation gradleApi()
+    implementation localGroovy()
+
+    //necesario para crear un fatJar
+    extraLibs "gradle.plugin.com.github.dkorotych.gradle.maven.exec:gradle-maven-exec-plugin:2.2.1"
+    configurations.compile.extendsFrom(configurations.extraLibs)
+
+    // https://mvnrepository.com/artifact/com.github.dkorotych.gradle-maven-exec/com.github.dkorotych.gradle-maven-exec.gradle.plugin
+    compile group: 'com.github.dkorotych.gradle-maven-exec', name: 'com.github.dkorotych.gradle-maven-exec.gradle.plugin', version: '2.2.1'
+
+    //runtime "gradle.plugin.com.github.dkorotych.gradle.maven.exec:gradle-maven-exec-plugin:2.2.1"
+}
+
+// incrementar automáticamente el buildNumber
+task autoBuildNumber {
+    doFirst {
+        File propertiesFile = new File('gradle.properties')
+        def lines = propertiesFile.readLines()
+
+        PrintWriter printWriter = new PrintWriter(propertiesFile)
+        
+        lines.each {String line ->
+            if (line.startsWith("version") ){
+                String versionNumber = line.tokenize("=")[1]
+                String[] versionParts = versionNumber.tokenize(".")
+                // recalcular el build 
+                versionNumber = versionParts[0]+\
+                                '.'+versionParts[1]+\
+                                '.'+versionParts[2]+
+                                '.'+( versionParts.length==4 ? (versionParts[3].toInteger()+1).toString():"1")
+                
+                line = "version="+versionNumber
+                //                println line
+            }
+            printWriter.println(line)
+        }
+        printWriter.close()
+    }
+}
+// saltar autoBuildNumber
+// agregar esta tarea para que no se incremente el valor.
+task sabn{}
+
+
+// agregar la dependencia solo si no se trata de un release
+if (! (project.gradle.startParameter.taskNames.join(",").toLowerCase().contains("release")
+       || project.gradle.startParameter.taskNames.join(",").toLowerCase().contains("sabn")) 
+   ) {
+    build.dependsOn autoBuildNumber 
+}
+
+build.doLast {
+
+    // copiar las clases compiladas
+    copy {
+        from "build/classes/java/main/."
+        into "target/classes"
+    }
+
+    //prepareFrontEnd.execute()
+    //buildFrontEnd.execute()
+
+    println "***************************************************************"
+    println "SISTEMA: " + name
+    println "VERSION: " + version
+    println "***************************************************************"
+}
+
+jar {
+    from {
+        configurations.extraLibs.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+}
+
