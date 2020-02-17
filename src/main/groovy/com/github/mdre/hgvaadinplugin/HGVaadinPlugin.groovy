@@ -24,19 +24,16 @@ class HGVaadinPlugin implements Plugin<Project> {
                     }
                 }
             }
-            // war {
-                
-            //     println "war"
-            //     // from "$buildDir/classes/java/main"
-            //     webInf {
-            //         doLast {
-            //             println "webinf"
-            //             from ("target/classes/META-INF") {
-            //                 into "classes/META-INF"
-            //             }
-            //         }
-            //     }
-            // }
+            war {
+                println "war +++++++++++++++++"
+                // from "$buildDir/classes/java/main"
+                webInf {
+                    println "webinf"
+                    from ("target/classes/META-INF") {
+                        into "classes/META-INF"
+                    }
+                }
+            }
         }
 
         HGVaadinConfig hgvConfig = project.extensions.create('hgvConfig', HGVaadinConfig.class)
@@ -58,13 +55,15 @@ class HGVaadinPlugin implements Plugin<Project> {
             group = "Hybrid Gradle Vaadin plugin"
             description = "build front-end"
 
-             goals 'vaadin:build-frontend'
+            goals 'vaadin:build-frontend'
+            //finalizedBy(project.tasks['war'])
         }
 
         project.task('vaadinBuild'){
             group = "Hybrid Gradle Vaadin plugin"
             description = "build the app"
 
+            finalizedBy(project.tasks['build'])
             doLast {
                 println "***************************************************************"
                 println "Building Vaadin project: " + project.name
@@ -102,16 +101,38 @@ class HGVaadinPlugin implements Plugin<Project> {
             }
         }
 
-        project.tasks['build'].doLast {
+        project.tasks['classes'].doLast {
             project.copy {
                 from "build/classes/java/main/."
                 into "target/classes"
             }
-            
         }        
+        
+        project.tasks['war'].doFirst {
+            println "war first <<<<<<<<<<<<<<<<<<<<<<<<<<<"
+            // project.copy {
+            //     from "build/classes/java/main/."
+            //     into "target/classes"
+            // }
+        }        
+        project.tasks['war'].doLast {
+            println "war last <<<<<<<<<<<<<<<<<<<<<<<<<<<"
+            // project.copy {
+            //     from "build/classes/java/main/."
+            //     into "target/classes"
+            // }
+        }        
+        
+        project.tasks['build'].doLast {
+            println "build <<<<<<<<<<<<<<<<<<<<<<<<<<<"
+            // project.copy {
+            //     from "build/classes/java/main/."
+            //     into "target/classes"
+            // }
+        }        
+        
 
-
-        project.tasks['war'].mustRunAfter('buildFrontEnd')
+        //project.tasks['war'].doFirst(project.tasks['buildFrontEnd'])
 
         project.task('updatePom') {
             group = "Hybrid Gradle Vaadin plugin"
@@ -153,7 +174,7 @@ class HGVaadinPlugin implements Plugin<Project> {
         }
 
         project.afterEvaluate {
-            project.tasks['updatePom'].dependsOn project.tasks['build']
+            project.tasks['updatePom'].dependsOn project.tasks['classes']
             project.tasks['prepareFrontEnd'].dependsOn project.tasks['updatePom']
             project.tasks['buildFrontEnd'].dependsOn project.tasks['prepareFrontEnd']
             project.tasks['vaadinBuild'].dependsOn project.tasks['buildFrontEnd']
