@@ -24,7 +24,7 @@ class HGVaadinPlugin implements Plugin<Project> {
         projectRef = project
 
         //verify if pom exist
-        verifyPom()
+        verifyPomExist()
 
         project.task('prepareFrontEnd', type: MavenExec) {
             group = "Vaadin mvn build"
@@ -85,6 +85,9 @@ class HGVaadinPlugin implements Plugin<Project> {
 
                 // actualizar la versión de vaadin
                 pomxml."properties".'vaadin.version'[0].setValue( hgvConfig.getVaadinVersion())
+                pomxml."properties".'maven.compiler.source'[0].setValue( hgvConfig.getCompilerSource())
+                pomxml."properties".'maven.compiler.target'[0].setValue( hgvConfig.getCompilerTarget())
+                pomxml."properties".'project.build.sourceEncoding'[0].setValue( hgvConfig.getSourceEncoding())
 
                 // borrar todas las dependencias
                 pomxml.remove(pomxml.dependencies)
@@ -144,13 +147,13 @@ class HGVaadinPlugin implements Plugin<Project> {
     }
 
     def verifyPomExist() {
-        FIle pomExist = new File("pom.xml")
-        println "POM exist: ",pomExist.exist()
+        File pomExist = new File("pom.xml")
+        
+        if (!pomExist.exists()) {
+            String templ = getClass().getResourceAsStream("/template/pom_template.xml").text
+            File output = new File("pom.xml")
+            output << templ
+        } 
     }
-    // def copyCompiledClass() {
-    //     copy {
-    //         from "build/classes/java/main/."
-    //         into "target/classes"
-    //     }
-    // }
+    
 }
