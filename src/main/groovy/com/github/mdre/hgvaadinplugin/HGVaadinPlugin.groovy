@@ -4,11 +4,6 @@ import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import com.github.dkorotych.gradle.maven.exec.MavenExec;
 
-// class HGVaadinConfig {
-//     // default vaadin version
-//     String vaadinVersion = "14.0.0"
-// }
-
 class HGVaadinPlugin implements Plugin<Project> {
     def projectRef
 
@@ -17,7 +12,33 @@ class HGVaadinPlugin implements Plugin<Project> {
         println "Hybrid Gradle Vaaadin plugin."
         
         project.plugins.apply('com.github.dkorotych.gradle-maven-exec')
+        project.plugins.apply('war')
         
+        project.configure(project) {
+            sourceSets {
+                main {
+                    resources {
+                        srcDirs += [
+                            'target/classes',
+                        ]
+                    }
+                }
+            }
+            // war {
+                
+            //     println "war"
+            //     // from "$buildDir/classes/java/main"
+            //     webInf {
+            //         doLast {
+            //             println "webinf"
+            //             from ("target/classes/META-INF") {
+            //                 into "classes/META-INF"
+            //             }
+            //         }
+            //     }
+            // }
+        }
+
         HGVaadinConfig hgvConfig = project.extensions.create('hgvConfig', HGVaadinConfig.class)
 
         // project.getPluginManager().apply('gradle-maven-exec-plugin')
@@ -27,17 +48,23 @@ class HGVaadinPlugin implements Plugin<Project> {
         verifyPomExist()
 
         project.task('prepareFrontEnd', type: MavenExec) {
-            group = "Vaadin mvn build"
+            group = "Hybrid Gradle Vaadin plugin"
             description = "prepare front-end"
 
             goals 'vaadin:prepare-frontend'
         }
 
         project.task('buildFrontEnd', type: MavenExec){
+            group = "Hybrid Gradle Vaadin plugin"
+            description = "build front-end"
+
              goals 'vaadin:build-frontend'
         }
 
         project.task('vaadinBuild'){
+            group = "Hybrid Gradle Vaadin plugin"
+            description = "build the app"
+
             doLast {
                 println "***************************************************************"
                 println "Building Vaadin project: " + project.name
@@ -61,6 +88,9 @@ class HGVaadinPlugin implements Plugin<Project> {
         }
 
         project.task('vaadinClean'){
+            group = "Hybrid Gradle Vaadin plugin"
+            description = "clean the project"
+
             doLast {
                 project.delete("bin")
                 project.delete("build")
@@ -77,9 +107,15 @@ class HGVaadinPlugin implements Plugin<Project> {
                 from "build/classes/java/main/."
                 into "target/classes"
             }
+            
         }        
 
+
+        project.tasks['war'].mustRunAfter('buildFrontEnd')
+
         project.task('updatePom') {
+            group = "Hybrid Gradle Vaadin plugin"
+            description = "update the project pom"
             doLast {
                 def pomxml = new XmlParser().parse('pom.xml')
 
@@ -108,20 +144,9 @@ class HGVaadinPlugin implements Plugin<Project> {
                     new Node(depInstance,"version","$depVersion")
                     
                 }
-                
-                
 
                 //Save File
                 def writer = new FileWriter('pom.xml')
-
-                //Option 1: Write XML all on one line
-                // def builder = new groovy.xml.StreamingMarkupBuilder()
-                // builder.encoding = "UTF-8"
-                // writer << builder.bind {
-                //     mkp.yield pomxml
-                // }
-
-                //Option 2: Pretty print XML
                 groovy.xml.XmlUtil.serialize(pomxml, writer)
             }
 
@@ -155,5 +180,6 @@ class HGVaadinPlugin implements Plugin<Project> {
             output << templ
         } 
     }
+
     
 }

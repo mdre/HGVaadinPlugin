@@ -32,6 +32,7 @@ dependencies {
     compile group: 'com.github.dkorotych.gradle-maven-exec', name: 'com.github.dkorotych.gradle-maven-exec.gradle.plugin', version: '2.2.1'
 
     //runtime "gradle.plugin.com.github.dkorotych.gradle.maven.exec:gradle-maven-exec-plugin:2.2.1"
+    
 }
 
 // incrementar automáticamente el buildNumber
