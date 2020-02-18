@@ -2,6 +2,7 @@ plugins {
     id 'groovy'
     id 'maven'
     id "com.github.dkorotych.gradle-maven-exec" version "2.2.1"
+    id "com.gradle.plugin-publish" version "0.10.1"
 }
 
 repositories {
@@ -93,6 +94,23 @@ build.doLast {
 jar {
     from {
         configurations.extraLibs.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+}
+
+
+// The configuration example below shows the minimum required properties
+// configured to publish your plugin to the plugin portal
+pluginBundle {
+    website = 'https://github.com/mdre/HGVaadinPlugin/tree/master/src/main'
+    vcsUrl = 'https://github.com/mdre/HGVaadinPlugin/tree/master/src/main'
+    description = 'HGVaadinPlugin - Hybrid Gradle Vaadin Plugin'
+    tags = ['hgv']
+
+    plugins {
+        greetingsPlugin {
+            // id is captured from java-gradle-plugin configuration
+            displayName = 'HGVaadinPlugin'
+        }
     }
 }
 
